@@ -3,8 +3,8 @@ CC=gcc
 
 all: shell
 
-debug: CFLAGS += -g
-debug: alloc
+debug: CFLAGS += -g -DDEBUG
+debug: shell
 
 shell: shell.c shell.h
 	$(CC) $(CFLAGS) -o shell shell.c
