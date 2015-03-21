@@ -3,12 +3,13 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <string.h>
 #include "shell.h"
 
 int main(int argc, char **argv){
   char input_line[MAX_INPUT_LENGTH];
-  char *input_toks[MAX_INPUT_TOKENS];
   int i             = 0;
+  int cmd_cnt       = 0;
 
   while(true){
     //print prompt
@@ -17,15 +18,6 @@ int main(int argc, char **argv){
     //get input line
     if(fgets(input_line,MAX_INPUT_LENGTH,stdin) == 0)
       return 0;
-    //parse input string into tokens
-    input_toks[0] = lntok(input_line);
-    for(i=1; i<MAX_INPUT_TOKENS; ++i){
-      input_toks[i] = lntok(NULL);
-    }
-#ifdef DEBUG
-    for(i=0;i<MAX_INPUT_TOKENS;++i)
-      printf("%s\n",input_toks[i]);
-#endif
     //parse input into command strings
     //execute commands
     //wait for commands to finish
@@ -89,4 +81,29 @@ char *lntok(char *s){
   }
 
   return s;
+}
+
+//parse the input line into command and argument arrays
+void argtok(char *input_line,char **output_args){ 
+  char *input_toks[MAX_INPUT_TOKENS];
+  static int curr         = 0;
+  int i                   = 0;
+
+  //parse new input strings into tokens and fill the array
+  if(input_line != NULL){
+    //parse input string into tokens
+    input_toks[0] = lntok(input_line);
+    for(i=1; i<MAX_INPUT_TOKENS; ++i){
+      input_toks[i] = lntok(NULL);
+    }
+    curr = 0;
+  }
+  //put the next command and argument into the array
+  while(strcmp(input_toks[curr],"|") != 0){
+    output_args[i++] = input_toks[curr++];
+  }
+  //"NULL-terminate" argument array
+  output_args[i] = 0;
+  //advance past pipe
+  ++curr;
 }

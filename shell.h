@@ -10,5 +10,6 @@
 //parse the input line into tokens
 char *lntok(char *);
 
-//parse the input line into 
+//parse the input line into command and argument arrays
+void argtok(char *,char **);
 #endif
