@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -8,8 +9,11 @@
 
 int main(int argc, char **argv){
   command_t *cmd_list = NULL;
+  command_t *curr     = NULL;
   char input_line[MAX_INPUT_LENGTH];
-  int i             = 0;
+  //int i             = 0;
+  int pid           = 0;
+  int status        = 0;
 
   while(true){
     //print prompt
@@ -24,8 +28,20 @@ int main(int argc, char **argv){
       fprintf(stderr,"shell: Error parsing input. Try again.\n");
       continue;
     }
-    //execute commands
+    //run commands
+    for(curr = cmd_list; curr != NULL; curr = curr->next){
+#ifdef DEBUG
+      print_command(curr);
+#endif
+      run(curr);
+    }
+
     //wait for commands to finish
+    while((pid = wait(&status)) != -1){
+#ifdef DEBUG
+      fprintf(stderr,"Process %d exits with %d.\n",pid,WEXITSTATUS(status));
+#endif
+    }
     //clean up
     destroy_command(cmd_list);
   }
@@ -38,8 +54,12 @@ command_t *create_command(){
   if(head == NULL)
     return NULL;
   head->argc = 1;
-  head->fd_in = 0;
-  head->fd_out = 0;
+  if(pipe(head->pipe) != 0){
+    perror("pipe");
+    return NULL;
+  }
+  head->pid = 0;
+  head->head_flag = 0;
   head->next = NULL;
 
   return head;
@@ -53,6 +73,45 @@ void destroy_command(command_t *c){
   else{
     destroy_command(c->next);
     free(c);
+  }
+}
+
+void print_command(command_t *c){
+  char *s = NULL;
+  if(c == NULL)
+    return;
+  for(s = c->argv[0]; s != 0; ++s)
+    printf("%s ",s);
+  printf("\n");
+}
+
+void run(command_t *c){
+  int pid=0;
+
+  switch(pid = fork()){
+    case -1: //error
+      perror("fork");
+      exit(1);
+      break;
+    case 0: //child
+      //if you  have a next command, set up the pipe
+      if(c->next != NULL){
+        dup2(c->next->pipe[PIPE_IN],1);//send stdout to the pipe input
+        close(c->next->pipe[PIPE_OUT]);//close the pipe output
+      }
+      //if you have a previous command, set up that pipe
+      if(c->head_flag == 0){
+        dup2(c->pipe[PIPE_OUT],0);//get stdin from the pipe
+        close(c->pipe[PIPE_IN]);//close the pipe input
+      }
+      execvp(c->argv[0],c->argv);//execute the command
+      perror(c->argv[0]);//catch any errors
+      break;
+    default: //parent
+      //close both ends of the pipe, because we don't need them
+      close(c->pipe[PIPE_OUT]);
+      close(c->pipe[PIPE_IN]);
+      break;
   }
 }
 
@@ -122,10 +181,11 @@ command_t *get_cmd_list(char *input_line){
   if(head == NULL)
     return NULL;
   curr = head;
+  head->head_flag = 1;
 
   //parse input string into tokens, put each token into the current argument array
   curr->argv[0] = lntok(input_line);
-  for(i=1; curr->argv[i-1] != 0 && i<MAX_INPUT_TOKENS; ++i){
+  for(i=1; /*curr->argv[i-1] != 0 &&*/ i<MAX_INPUT_TOKENS; ++i){
     curr->argv[i] = lntok(NULL);
     if(curr->argv[i] == NULL)
       return head;
@@ -136,6 +196,8 @@ command_t *get_cmd_list(char *input_line){
       if(curr->next == NULL)
         return NULL;
       curr = curr->next;
+      i = 0;
+      curr->argv[i] = lntok(NULL);
     }
     //otherwise, just put the string in the array and continue
     else{
