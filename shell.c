@@ -20,11 +20,13 @@ int main(int argc, char **argv){
       return 0;
     //parse input into command strings
     cmd_list = get_cmd_list(input_line);
-    if(cmd_list == NULL)
-      break;
-
+    if(cmd_list == NULL){
+      fprintf(stderr,"shell: Error parsing input. Try again.\n");
+      continue;
+    }
     //execute commands
     //wait for commands to finish
+    //clean up
     destroy_command(cmd_list);
   }
 
