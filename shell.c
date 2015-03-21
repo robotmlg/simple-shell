@@ -7,9 +7,9 @@
 #include "shell.h"
 
 int main(int argc, char **argv){
+  command_t *cmd_list = NULL;
   char input_line[MAX_INPUT_LENGTH];
   int i             = 0;
-  int cmd_cnt       = 0;
 
   while(true){
     //print prompt
@@ -19,12 +19,28 @@ int main(int argc, char **argv){
     if(fgets(input_line,MAX_INPUT_LENGTH,stdin) == 0)
       return 0;
     //parse input into command strings
+    cmd_list = get_cmd_list(input_line);
+    if(cmd_list == NULL)
+      break;
+
     //execute commands
     //wait for commands to finish
 
   }
 
   return 0;
+}
+
+command_t *create_command(){
+  command_t *head = malloc(sizeof(command_t));
+  if(head == NULL)
+    return NULL;
+  head->argc = 1;
+  head->fd_in = 0;
+  head->fd_out = 0;
+  head->next = NULL;
+
+  return head;
 }
 
 //parse the input line into tokens
@@ -84,26 +100,34 @@ char *lntok(char *s){
 }
 
 //parse the input line into command and argument arrays
-void argtok(char *input_line,char **output_args){ 
-  char *input_toks[MAX_INPUT_TOKENS];
-  static int curr         = 0;
+command_t *get_cmd_list(char *input_line){ 
+  command_t *head = NULL;
+  command_t *curr = NULL;
   int i                   = 0;
 
-  //parse new input strings into tokens and fill the array
-  if(input_line != NULL){
-    //parse input string into tokens
-    input_toks[0] = lntok(input_line);
-    for(i=1; i<MAX_INPUT_TOKENS; ++i){
-      input_toks[i] = lntok(NULL);
+  head = create_command();
+  if(head == NULL)
+    return NULL;
+  curr = head;
+
+  //parse input string into tokens, put each token into the current argument array
+  curr->argv[0] = lntok(input_line);
+  for(i=1; curr->argv[i-1] != 0 && i<MAX_INPUT_TOKENS; ++i){
+    curr->argv[i] = lntok(NULL);
+    if(curr->argv[i] == NULL)
+      return head;
+    //if you get a pipe, make a new command
+    else if(strcmp(curr->argv[i],"|") == 0){
+      curr->argv[i] = 0;
+      curr->next = create_command();
+      if(curr->next == NULL)
+        return NULL;
+      curr = curr->next;
     }
-    curr = 0;
+    //otherwise, just put the string in the array and continue
+    else{
+      ++curr->argc;
+    }
   }
-  //put the next command and argument into the array
-  while(strcmp(input_toks[curr],"|") != 0){
-    output_args[i++] = input_toks[curr++];
-  }
-  //"NULL-terminate" argument array
-  output_args[i] = 0;
-  //advance past pipe
-  ++curr;
+  return head;
 }
