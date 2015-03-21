@@ -18,6 +18,7 @@ struct command_t{
 typedef struct command_t command_t;
 
 command_t *create_command();
+void destroy_command(command_t *);
 
 //parse the input line into tokens
 char *lntok(char *);

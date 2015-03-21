@@ -25,7 +25,7 @@ int main(int argc, char **argv){
 
     //execute commands
     //wait for commands to finish
-
+    destroy_command(cmd_list);
   }
 
   return 0;
@@ -41,6 +41,17 @@ command_t *create_command(){
   head->next = NULL;
 
   return head;
+}
+
+void destroy_command(command_t *c){
+  if(c == NULL){}
+  else if(c->next == NULL){
+    free(c);
+  }
+  else{
+    destroy_command(c->next);
+    free(c);
+  }
 }
 
 //parse the input line into tokens
