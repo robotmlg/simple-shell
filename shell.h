@@ -11,8 +11,7 @@
 struct command_t{
   int argc;
   char *argv[MAX_INPUT_TOKENS];
-  int fd_in;
-  int fd_out;
+  int pipe[2];
   struct command_t *next;
 };
 typedef struct command_t command_t;
