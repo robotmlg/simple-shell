@@ -6,8 +6,11 @@ all: shell
 debug: CFLAGS += -g -DDEBUG
 debug: shell
 
-shell: shell.c shell.h
-	$(CC) $(CFLAGS) -o shell shell.c
+shell: shell.c shell.h builtins.o
+	$(CC) $(CFLAGS) -o shell shell.c builtins.o
+
+builtins.o: builtins.c builtins.h
+	$(CC) $(CFLAGS) -c -o builtins.o builtins.c
 
 clean:
 	rm shell;\
