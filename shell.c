@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "shell.h"
+#include "builtins.h"
 
 int main(int argc, char **argv){
   command_t *cmd_list = NULL;
@@ -29,11 +30,15 @@ int main(int argc, char **argv){
       continue;
     }
     //run commands
-    for(curr = cmd_list; curr != NULL; curr = curr->next){
-#ifdef DEBUG
-      print_command(curr);
-#endif
-      run(curr);
+    //check for builtin
+    if(exec_bi(cmd_list->argc,cmd_list->argv) == -1){
+      //if it's not a builtin, run the commands manually
+      for(curr = cmd_list; curr != NULL; curr = curr->next){
+  #ifdef DEBUG
+        print_command(curr);
+  #endif
+        run(curr);
+      }
     }
 
     //wait for commands to finish
