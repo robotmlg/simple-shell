@@ -38,9 +38,7 @@ int main(int argc, char **argv){
 
     //wait for commands to finish
     while((pid = wait(&status)) != -1){
-#ifdef DEBUG
       fprintf(stderr,"Process %d exits with %d.\n",pid,WEXITSTATUS(status));
-#endif
     }
     //clean up
     destroy_command(cmd_list);
@@ -58,6 +56,7 @@ command_t *create_command(){
     perror("pipe");
     return NULL;
   }
+  memset(head->argv,0,sizeof(char *)*MAX_INPUT_TOKENS);
   head->pid = 0;
   head->head_flag = 0;
   head->next = NULL;
@@ -152,7 +151,11 @@ char *lntok(char *s){
     //skip the quote
     ++s;
     //find the end of the string
-    for(last = s; *last != curr; ++last);
+    for(last = s; *last != curr && *last != 0; ++last);
+    if(*last == 0){
+      fprintf(stderr,"Error: mismatched quotes\n");
+      return NULL;
+    }
     //null terminate it and advance it
     *last++ = '\0';
   }
@@ -190,7 +193,7 @@ command_t *get_cmd_list(char *input_line){
 
   //parse input string into tokens, put each token into the current argument array
   curr->argv[0] = lntok(input_line);
-  for(i=1; /*curr->argv[i-1] != 0 &&*/ i<MAX_INPUT_TOKENS; ++i){
+  for(i=1; curr->argv[i-1] != 0 && i<MAX_INPUT_TOKENS; ++i){
     curr->argv[i] = lntok(NULL);
     if(curr->argv[i] == NULL)
       return head;
@@ -209,5 +212,9 @@ command_t *get_cmd_list(char *input_line){
       ++curr->argc;
     }
   }
+  if(i == MAX_INPUT_TOKENS){
+    fprintf(stderr,"Too many arguments!\n");
+    return NULL;
+  } 
   return head;
 }
