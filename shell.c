@@ -88,6 +88,9 @@ void print_command(command_t *c){
 void run(command_t *c){
   int pid=0;
 
+  if(c==NULL || c->argv[0] == NULL)
+    return;
+
   switch(pid = fork()){
     case -1: //error
       perror("fork");
@@ -134,6 +137,8 @@ char *lntok(char *s){
     pflag = 0;
     return pipe;
   }
+  if(s == NULL)
+    return NULL;
   //skip initial whitespace
   do{
     //if you find the end of the string in the whitespace, you have no tokens
