@@ -1,0 +1,11 @@
+/*
+ * A simple shell with pipes
+ * Written by Matt Goldman
+ * Rutgers University 198:416:04
+ * Last updated 2015-03-22
+ *
+ * README
+ */
+
+ This simple shell can run any external command with I/O piping between them.
+ It has cd and exit built in, and uses a table of function pointers to run them.
