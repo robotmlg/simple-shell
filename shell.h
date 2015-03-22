@@ -1,3 +1,11 @@
+/*
+ * Simple shell with pipes
+ * Written by Matt Goldman
+ * Rutgers University 198:416:04
+ * Last updated 2015-03-22
+ *
+ * shell.h: main shell and function declarations
+ */
 #ifndef _SHELL_H_
 #define _SHELL_H_
 

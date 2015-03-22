@@ -1,3 +1,11 @@
+/*
+ * Simple shell with pipes
+ * Written by Matt Goldman
+ * Rutgers University 198:416:04
+ * Last updated 2015-03-22
+ *
+ * shell.c: main shell and function definitions
+ */
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

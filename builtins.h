@@ -1,3 +1,11 @@
+/*
+ * Simple shell with pipes
+ * Written by Matt Goldman
+ * Rutgers University 198:416:04
+ * Last updated 2015-03-22
+ *
+ * builtins.h: Built-in function library declarations
+ */
 #ifndef _BUILTINS_H_
 #define _BUILTINS_H_
 

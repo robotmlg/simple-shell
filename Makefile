@@ -1,3 +1,12 @@
+#
+# Simple shell with pipes
+# Written by Matt Goldman
+# Rutgers University 198:416:04
+# Last updated 2015-03-22
+#
+# Makefile: make instructions for shell, with rule for debugging
+#
+
 CFLAGS = -Wall
 CC=gcc
 
